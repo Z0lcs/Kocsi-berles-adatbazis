@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js" defer></script>
     <title>🦆Kacsa autóbérlő🦆</title>
 </head>
@@ -13,76 +14,39 @@
         <h1>Autóbérlés</h1>
         <p>Bérelj álomautót gyorsan és egyszerűen!</p>
     </header>
+    
     <div class="urlap-kontener" id="foglalas">
         <h2>Foglalás Leadása</h2>
-        <form action="foglalas.php" method="POST">
+        <form id="berles-form"> 
             <div class="urlap-csoport">
                 <label for="nev">Teljes név:</label>
-                <input type="text" id="nev" name="nev" required>
+                <input type="text" id="nev" required>
             </div>
             <div class="urlap-csoport">
                 <label for="email">E-mail cím:</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="email" required>
             </div>
             <div class="urlap-csoport">
                 <label for="auto">Választott autó:</label>
-                <select id="auto" name="auto_tipus" required>
-                    <option value="Chevrolet Corvette">Chevrolet Corvette</option>
-                    <option value="Porsche 911">Porsche 911</option>
-                    <option value="Tesla Model S">Tesla Model S</option>
-                </select>
+                <select id="auto" required>
+                    </select>
             </div>
             <div class="urlap-csoport">
                 <label for="kezdo">Bérlés kezdete:</label>
-                <input type="date" id="kezdo" name="kezdo_datum" required>
+                <input type="date" id="kezdo" required>
             </div>
             <div class="urlap-csoport">
                 <label for="zaro">Bérlés vége:</label>
-                <input type="date" id="zaro" name="zaro_datum" required>
+                <input type="date" id="zaro" required>
             </div>
             <button type="submit">Foglalás megerősítése</button>
         </form>
     </div>
     
     <div class="container">
-        <div class="kartya-kontener">
-            <div class="kartya">
-                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Sportautó">
-                <h3>Chevrolet Corvette</h3>
-                <p>Sportautó, V8 motor</p>
-                <div class="ar">45 000 Ft / nap</div>
-                <a href="#foglalas"><button style="width: 80%;">Kiválasztom</button></a>
-            </div>
-            <div class="kartya">
-                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Sportautó">
-                <h3>Chevrolet Corvette</h3>
-                <p>Sportautó, V8 motor</p>
-                <div class="ar">45 000 Ft / nap</div>
-                <a href="#foglalas"><button style="width: 80%;">Kiválasztom</button></a>
-            </div>
-            <div class="kartya">
-                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Sportautó">
-                <h3>Chevrolet Corvette</h3>
-                <p>Sportautó, V8 motor</p>
-                <div class="ar">45 000 Ft / nap</div>
-                <a href="#foglalas"><button style="width: 80%;">Kiválasztom</button></a>
-            </div>
-            <div class="kartya">
-                <img src="https://images.unsplash.com/photo-1609521263047-f8f205293f24?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Luxusautó">
-                <h3>Porsche 911</h3>
-                <p>Prémium kategória</p>
-                <div class="ar">70 000 Ft / nap</div>
-                <a href="#foglalas"><button style="width: 80%;">Kiválasztom</button></a>
-            </div>
-            <div class="kartya">
-                <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Elektromos autó">
-                <h3>Tesla Model S</h3>
-                <p>Elektromos, csendes, gyors</p>
-                <div class="ar">55 000 Ft / nap</div>
-                <a href="#foglalas"><button style="width: 80%;">Kiválasztom</button></a>
-            </div>
+        <div class="kartya-kontener" id="auto-lista">
+            <p style='color:white; text-align:center;'>Autók betöltése...</p>
         </div>
-
     </div>
 </body>
 </html>

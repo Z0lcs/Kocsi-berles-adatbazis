@@ -1,9 +1,8 @@
 // 1. Supabase konfiguráció a te projektadataid alapján
 const SUPABASE_URL = "https://lviqqzphrrosqazvdlzx.supabase.co";
-const SUPABASE_ANON_KEY = "sb_secret_eqqZN-GCSrdTFmEQ8dnnMg_SZCm8tv9";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_tqfvpNy5Nh-watSJQLU8ZA_-2yXNTXM";
 
-// Böngészőbarát kliens inicializálása
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 document.addEventListener("DOMContentLoaded", () => {
     const autoLista = document.getElementById("auto-lista");
@@ -13,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 1. AUTÓK DINAMIKUS BETÖLTÉSE ---
     async function autokBetoltese() {
         if (!autoLista) return;
-        autoLista.innerHTML = "<p style='color:white; text-align:center; grid-column: 1/-1;'>Autók betöltése a Supabase felhőből...</p>";
 
         const { data: autok, error } = await supabase
             .from('autok')
@@ -21,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (error) {
             console.error("Hiba az autók lekérésekor:", error);
-            autoLista.innerHTML = "<p style='color:red; text-align:center; grid-column: 1/-1;'>Nem sikerült betölteni az autókat az adatbázisból!</p>";
+            autoLista.innerHTML = "<p style='color:red; text-align:center; grid-column: 1/-1;'>Nem sikerült betölteni az autókat!</p>";
             return;
         }
 
@@ -34,23 +32,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         autok.forEach(auto => {
-            // HTML Kártyák legenerálása az adatbázis adatai alapján
+            // Teljes név összefűzése a különálló oszlopokból
+            const autoTeljesNev = `${auto.marka} ${auto.tipus}`;
+
+            // Kártyák generálása
             const kartya = document.createElement("div");
             kartya.className = "kartya";
             kartya.innerHTML = `
-                <img src="${auto.kep_url}" alt="${auto.marka_modell}">
-                <h3>${auto.marka_modell}</h3>
-                <p>${auto.leiras || ''}</p>
+                <img src="${auto.kep_url}" alt="${autoTeljesNev}">
+                <h3>${autoTeljesNev}</h3>
+                <p>Évjárat: ${auto.evjarat}</p>
                 <div class="ar">${Number(auto.ar_per_nap).toLocaleString()} Ft / nap</div>
-                <a href="#foglalas"><button style="width: 80%;" onclick="valasztottAutoBeallitas('${auto.marka_modell}')">Kiválasztom</button></a>
+                <a href="#foglalas"><button style="width: 80%;" onclick="valasztottAutoBeallitas('${auto.id}')">Kiválasztom</button></a>
             `;
             autoLista.appendChild(kartya);
 
-            // Select legördülő menü opcióinak feltöltése
+            // Legördülő menü feltöltése (az értéke az autó ID-ja lesz!)
             if (autoSelect) {
                 const opcio = document.createElement("option");
-                opcio.value = auto.marka_modell;
-                opcio.textContent = auto.marka_modell;
+                opcio.value = auto.id; 
+                opcio.textContent = autoTeljesNev;
                 autoSelect.appendChild(opcio);
             }
         });
@@ -63,41 +64,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const nev = document.getElementById("nev").value;
             const email = document.getElementById("email").value;
-            const auto_tipus = document.getElementById("auto").value;
+            const autoId = document.getElementById("auto").value;
             const kezdo_datum = document.getElementById("kezdo").value;
             const zaro_datum = document.getElementById("zaro").value;
 
-            // Adat beszúrása a Supabase 'foglalások' nevű táblájába
-            const { error } = await supabase
-                .from('foglalások')
+            // Első lépés: Ügyfél elmentése az 'ugyfelek' táblába
+            const { data: ujUgyfel, error: ugyfelError } = await supabase
+                .from('ugyfelek')
+                .insert([{ nev: nev, email: email }])
+                .select();
+
+            if (ugyfelError) {
+                console.error("Ügyfél mentési hiba:", ugyfelError);
+                alert("Hiba történt a bérlő adatainak mentésekor.");
+                return;
+            }
+
+            const ugyfelId = ujUgyfel[0].id;
+
+            // Második lépés: Foglalás mentése a 'foglalasok' (ékezet nélkül!) táblába
+            const { error: foglalasError } = await supabase
+                .from('foglalasok')
                 .insert([
                     { 
-                        nev: nev, 
-                        email: email, 
-                        auto_tipus: auto_tipus, 
-                        kezdo_datum: kezdo_datum, 
-                        zaro_datum: zaro_datum 
+                        auto_id: autoId, 
+                        ugyfel_id: ugyfelId, 
+                        mettol: kezdo_datum, 
+                        meddig: zaro_datum,
+                        osszar: 0 // Ezt később lehetne finomítani a napok száma alapján
                     }
                 ]);
 
-            if (error) {
-                console.error("Foglalási hiba:", error);
-                alert("Hiba történt a mentés során: " + error.message);
+            if (foglalasError) {
+                console.error("Foglalási hiba:", foglalasError);
+                alert("Hiba történt a foglalás mentésekor: " + foglalasError.message);
             } else {
-                alert(`Sikeres foglalás! 🦆\nKöszönjük ${nev}, a foglalást rögzítettük a Supabase-ben.`);
+                alert(`Sikeres foglalás! 🦆\nKöszönjük ${nev}, rögzítettük a Supabase-ben.`);
                 berlesForm.reset(); 
             }
         });
     }
 
-    // Alkalmazás indítása
     autokBetoltese();
 });
 
-// Globális segédfüggvény a kártyákon lévő "Kiválasztom" gombokhoz
-function valasztottAutoBeallitas(autoNev) {
+// Globális segédfüggvény
+window.valasztottAutoBeallitas = function(autoId) {
     const selectElem = document.getElementById("auto");
     if (selectElem) {
-        selectElem.value = autoNev;
+        selectElem.value = autoId;
     }
 }
