@@ -1,8 +1,8 @@
-// 1. Supabase konfiguráció a te projektadataid alapján
 const SUPABASE_URL = "https://lviqqzphrrosqazvdlzx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_tqfvpNy5Nh-watSJQLU8ZA_-2yXNTXM";
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// Átneveztük a változót, így biztosan nem ütközik semmivel!
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 document.addEventListener("DOMContentLoaded", () => {
     const autoLista = document.getElementById("auto-lista");
@@ -13,7 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
     async function autokBetoltese() {
         if (!autoLista) return;
 
-        const { data: autok, error } = await supabase
+        // Itt is átírtuk a változó nevét
+        const { data: autok, error } = await supabaseClient
             .from('autok')
             .select('*');
 
@@ -32,10 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         autok.forEach(auto => {
-            // Teljes név összefűzése a különálló oszlopokból
             const autoTeljesNev = `${auto.marka} ${auto.tipus}`;
 
-            // Kártyák generálása
             const kartya = document.createElement("div");
             kartya.className = "kartya";
             kartya.innerHTML = `
@@ -47,7 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             autoLista.appendChild(kartya);
 
-            // Legördülő menü feltöltése (az értéke az autó ID-ja lesz!)
             if (autoSelect) {
                 const opcio = document.createElement("option");
                 opcio.value = auto.id; 
@@ -68,8 +66,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const kezdo_datum = document.getElementById("kezdo").value;
             const zaro_datum = document.getElementById("zaro").value;
 
-            // Első lépés: Ügyfél elmentése az 'ugyfelek' táblába
-            const { data: ujUgyfel, error: ugyfelError } = await supabase
+            // Itt is átírtuk a változó nevét
+            const { data: ujUgyfel, error: ugyfelError } = await supabaseClient
                 .from('ugyfelek')
                 .insert([{ nev: nev, email: email }])
                 .select();
@@ -82,8 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const ugyfelId = ujUgyfel[0].id;
 
-            // Második lépés: Foglalás mentése a 'foglalasok' (ékezet nélkül!) táblába
-            const { error: foglalasError } = await supabase
+            // Itt is átírtuk a változó nevét
+            const { error: foglalasError } = await supabaseClient
                 .from('foglalasok')
                 .insert([
                     { 
@@ -91,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         ugyfel_id: ugyfelId, 
                         mettol: kezdo_datum, 
                         meddig: zaro_datum,
-                        osszar: 0 // Ezt később lehetne finomítani a napok száma alapján
+                        osszar: 0 
                     }
                 ]);
 
@@ -108,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
     autokBetoltese();
 });
 
-// Globális segédfüggvény
 window.valasztottAutoBeallitas = function(autoId) {
     const selectElem = document.getElementById("auto");
     if (selectElem) {
