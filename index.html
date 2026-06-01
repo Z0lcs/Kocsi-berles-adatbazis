@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js" defer></script>
-    <title>🦆Kacsa autóbérlő🦆</title>
+    <title>🦆 Kacsa Autóbérlő 🦆</title>
 </head>
 <body>
 
@@ -29,7 +29,7 @@
             <div class="urlap-csoport">
                 <label for="auto">Választott autó:</label>
                 <select id="auto" required>
-                    </select>
+                </select>
             </div>
             <div class="urlap-csoport">
                 <label for="kezdo">Bérlés kezdete:</label>
@@ -39,14 +39,18 @@
                 <label for="zaro">Bérlés vége:</label>
                 <input type="date" id="zaro" required>
             </div>
+
+            <div id="ar-megjelenitese" class="ar-elonezet"></div>
+
             <button type="submit">Foglalás megerősítése</button>
         </form>
     </div>
     
     <div class="container">
         <div class="kartya-kontener" id="auto-lista">
-            <p style='color:white; text-align:center;'>Autók betöltése...</p>
+            <p style="color:white; text-align:center;">Autók betöltése...</p>
         </div>
     </div>
+
 </body>
 </html>
