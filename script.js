@@ -220,5 +220,91 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+
+// --- Autók betöltése Supabase-ből ---
+    // --- Autók betöltése Supabase-ből ---
+    async function autokBetoltese() {
+        if (!autoLista) return;
+        
+        const foglaltLista = document.getElementById("foglaltID");
+        
+        autoLista.innerHTML = "<p style='color:white;text-align:center;'>Autók betöltése...</p>";
+        if (foglaltLista) {
+            foglaltLista.innerHTML = "<h2>Foglalt autók</h2>"; 
+        }
+
+        // MÓDOSÍTÁS: Lekérjük az autókat, és velük együtt a hozzájuk tartozó foglalások 'meddig' dátumát is!
+        const { data: autok, error } = await supabaseClient
+            .from("autok")
+            .select(`
+                *,
+                foglalasok (
+                    meddig
+                )
+            `)
+            .order("marka");
+
+        if (error) {
+            console.error("Autók betöltési hiba:", error);
+            autoLista.innerHTML = "<p style='color:red;text-align:center;'>Hiba az autók betöltésekor. Ellenőrizd a Supabase kulcsot!</p>";
+            return;
+        }
+
+        autoLista.innerHTML = "";
+        autoSelect.innerHTML = '<option value="">Válassz autót...</option>';
+
+        autok.forEach(auto => {
+            const elerheto     = auto.elerheto;
+            const teljesNev    = `${auto.marka} ${auto.tipus}`;
+            const arFormazott  = Number(auto.ar_per_nap).toLocaleString("hu-HU");
+
+            // MÓDOSÍTÁS: Megkeressük, meddig van lefoglalva (ha van hozzá foglalás)
+            let foglaltSzoveg = "";
+            if (!elerheto && auto.foglalasok && auto.foglalasok.length > 0) {
+                // Ha több foglalás is lenne, a legutolsót vesszük alapul
+                const utolsoFoglalas = auto.foglalasok[auto.foglalasok.length - 1];
+                if (utolsoFoglalas.meddig) {
+                    foglaltSzoveg = `<div class="foglalt-datum">Lefoglalva: ${utolsoFoglalas.meddig}-ig</div>`;
+                }
+            }
+
+            // Kártya HTML generálása
+            const kartya = document.createElement("div");
+            kartya.className = `kartya${!elerheto ? " foglalt" : ""}`;
+            kartya.innerHTML = `
+                <img src="${auto.kep_url || 'https://placehold.co/400x220/1a1a2e/white?text=Nincs+kép'}" 
+                     alt="${teljesNev}" 
+                     onerror="this.src='https://placehold.co/400x220/1a1a2e/white?text=Nincs+kép'">
+                <h3>${teljesNev}</h3>
+                <p>Évjárat: ${auto.evjarat}</p>
+                <div class="ar">${arFormazott} Ft / nap</div>
+                
+                <!-- Ide szúrjuk be a dátumot, ha foglalt -->
+                ${foglaltSzoveg} 
+
+                ${!elerheto
+                    ? '<button disabled>Foglalt</button>'
+                    : `<button onclick="valasztottAutoBeallitas('${auto.id}')">Kiválasztom</button>`
+                }
+            `;
+
+            // Elosztás a két div között
+            if (elerheto) {
+                autoLista.appendChild(kartya);
+                
+                const option = document.createElement("option");
+                option.value = auto.id;
+                option.textContent = teljesNev;
+                option.dataset.ar = auto.ar_per_nap;
+                autoSelect.appendChild(option);
+            } else {
+                if (foglaltLista) {
+                    foglaltLista.appendChild(kartya);
+                }
+            }
+        });
+    }
+
+
     autokBetoltese();
 });
